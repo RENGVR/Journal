@@ -1,0 +1,81 @@
+﻿@page "/history"
+
+@using Journal.Data;
+@using Journal.Services;
+
+@inject WorkoutDataService WorkoutDataService
+
+<PageTitle>Trainingshistorie</PageTitle>
+
+<h2 class="mt-4 mb-3">Historie</h2>
+
+@if (Workouts is not null)
+{
+    @foreach (var workout in Workouts)
+    {
+        <div class="card w-50 p-3 m-3 rz-shadow-10 ">
+            <ul class="list-group list-group-flush">
+
+                <div class="d-flex flex-row justify-content-between align-items-md-center p-3">
+                    <h3 class="fw-bold">@workout.ExerciseDate</h3>
+
+                    <button class="btn btn-danger" type="button" @onclick="(() => RemoveWorkout(workout))">Löschen</button>
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Muskelgruppe</th>
+                            <th scope="col">Übungsname</th>
+                            <th scope="col">Sätze</th>
+                            <th scope="col">Wiederholungen</th>
+                            <th scope="col">Gewicht (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (workout.ExerciseList != null)
+                        {
+                            @foreach (var exercise in workout.ExerciseList)
+                            {
+                                <tr>
+                                    <th scope="row">@exercise.MusclesTrained</th>
+                                    <td>@exercise.ExerciseName</td>
+                                    <td>@exercise.Sets</td>
+                                    <td>@exercise.Repetitions</td>
+                                    <td>@exercise.Weight</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </ul>
+        </div>
+    }
+
+    
+}
+
+@code {
+    private List<Workout>? Workouts { get; set; } = default!;
+
+    private bool IsEdit { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Workouts = await WorkoutDataService.GetAllWorkoutsAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async void RemoveWorkout(Workout workout)
+    {
+        if (Workouts is null) return;
+        Workouts.Remove(workout);
+
+        await WorkoutDataService.WriteWorkoutsToFileAsync(Workouts);
+    }
+
+    private void EditWorkout()
+    {
+        // TODO: Editieren eines Workouts.
+    }
+}

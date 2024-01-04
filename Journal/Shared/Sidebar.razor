@@ -1,0 +1,38 @@
+﻿@inject NavigationManager NavigationManager
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<div id="sidebar-container" class="sidebar-container">
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <img src="favicon.png" className="App-logo" alt="logo" />
+          </div>
+          <div class="sidebar-items-container">
+
+            <div role="button" @onclick="@(() => NavigationManager.NavigateTo(""))" class="sidebar-items">
+                <div class="material-symbols-outlined">
+                    home
+                </div>
+                <p>Home</p>
+            </div>
+
+            <div role="button" @onclick="@(() => NavigationManager.NavigateTo("history"))" class="sidebar-items">
+              <div class="material-symbols-outlined">
+                fitness_center
+              </div>
+              <p>Historie</p>
+            </div>
+
+            <div role="button" @onclick="@(() => NavigationManager.NavigateTo("addWorkout"))" class="sidebar-items">
+              <div class="material-symbols-outlined">
+                playlist_add
+              </div>
+              <p>Hinzufügen</p>
+            </div>
+
+          </div>
+        </div>
+</div>
+
+@code {
+
+}

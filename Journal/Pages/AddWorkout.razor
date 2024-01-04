@@ -1,0 +1,137 @@
+﻿@page "/addWorkout"
+
+@using Journal.Data;
+@using System.ComponentModel.DataAnnotations;
+@using Journal.Services;
+
+@inject WorkoutDataService WorkoutDataService
+
+<PageTitle>Add Workout</PageTitle>
+
+<div class="container rz-shadow-10 mt-5">
+    <div class="login-container">
+        <EditForm Model="@Model" OnValidSubmit="@OnSubmit">
+            <DataAnnotationsValidator />
+            <h2 class="mb-3">Training hinzufügen</h2>
+
+            <h5 class="mb-3">Füge so viele Übungen hinzu wie du magst und speichere anschließend das Training.</h5>
+
+            <div class="w-100 d-flex justify-content-between">
+                <div class="d-flex flex-column align-items-md-center mb-3">
+                    <label for="workoutDate" class="mb-1">Trainingsdatum:</label>
+                    <InputDate class="form-control" @bind-Value=Workout.ExerciseDate/>
+                </div>
+
+                <div class="d-flex flex-column align-items-md-center mb-3">
+                    <label for="DropDownBindValue" class="mb-1">Muskelgruppe:</label>
+                    <RadzenDropDown @bind-Value=@Model.TrainedMuscle Data=@MuscleTypesEnumerable Style="width: 100%; max-width: 400px;" Name="DropDownBindValue" />
+                </div>
+            </div>
+
+            <div class="w-100 d-flex justify-content-between">
+                <div class="mb-3">
+                    <label class="mb-1" for="exerciseName">Übungsname:</label>
+                    <InputText id="exerciseName" class="form-control" @bind-Value="Model.ExerciseName" />
+                    <ValidationMessage For="@(() => Model.ExerciseName)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="mb-1" for="sets">Sätze:</label>
+                    <InputNumber min="0" id="sets" class="form-control" @bind-Value="Model.Sets" />
+                    <ValidationMessage For="@(() => Model.Sets)" />
+                </div>
+            </div>
+
+            <div class="w-100 d-flex justify-content-between">
+                <div class="mb-3">
+                    <label class="mb-1" for="repetitions">Wiederholungen:</label>
+                    <InputNumber min="0" id="repetitions" class="form-control" @bind-Value="Model.Repetitions" />
+                    <ValidationMessage For="@(() => Model.Repetitions)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="mb-1" for="weight">Gewicht in kg:</label>
+                    <InputNumber min="0" id="weight" class="form-control" @bind-Value="Model.Weight" />
+                    <ValidationMessage For="@(() => Model.Weight)" />
+                </div>
+            </div>
+
+            <div class="d-flex flex-row">
+
+                <div class="d-flex flex-column m-3 mb-0">
+                    <button type="button" @onclick="SaveExercise" class="btn btn-secondary mb-3">Übung bestätigen</button>
+
+                    @if (!string.IsNullOrEmpty(SaveMessage))
+                    {
+                        <div class="alert alert-danger">@SaveMessage</div>
+                    }
+                </div>
+                
+                <div class="d-flex flex-column m-3 mb-0">
+                    <button type="submit" class="btn btn-primary mb-3">Training speichern</button>
+                    @if (!string.IsNullOrEmpty(SaveMessage))
+                    {
+                        <div class="alert alert-danger">@SaveMessage</div>
+                    }
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    public ExerciseModel Model { get; set; } = new ExerciseModel();
+
+    public IEnumerable<Exercise.MuscleType> MuscleTypesEnumerable { get; set; } = Enum.GetValues(typeof(Exercise.MuscleType)).Cast<Exercise.MuscleType>();
+
+    public Workout Workout { get; set; } = default!;
+
+    public string SaveMessage { get; set; } = default!;
+
+    public List<Exercise> Exercises { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Workout = new Workout();
+        await base.OnInitializedAsync();
+    }
+
+    private void SaveExercise()
+    {
+        var exercise = new Exercise
+        {
+            ExerciseName = Model.ExerciseName,
+            Sets = Model.Sets,
+            Repetitions = Model.Repetitions,
+            Weight = Model.Weight,
+            MusclesTrained = Model.TrainedMuscle
+        };
+
+        Exercises.Add(exercise);
+    }
+
+    private async Task OnSubmit()
+    {
+        Workout.ExerciseList = Exercises;
+        await WorkoutDataService.CreateWorkoutAsync(Workout);
+    }
+
+    // Eine Klasse, die das Add Workoutformular darstellt
+    public class ExerciseModel
+    {
+        [Required(ErrorMessage = "Trainierter Muskel muss ausgewählt sein.")]
+        public Exercise.MuscleType TrainedMuscle { get; set; } = default!;
+
+        [Required(ErrorMessage = "Der Übungsname muss eingegeben werden.")]
+        public string ExerciseName { get; set; } = default!;
+
+        [Required(ErrorMessage = "Anzahl Sätze muss eingegeben werden.")]
+        public int Sets { get; set; } = default!;
+
+        [Required(ErrorMessage = "Anzahl Wiederholungen muss eingegeben werden.")]
+        public int Repetitions { get; set; } = default!;
+
+        [Required(ErrorMessage = "Gewicht muss eingegeben werden.")]
+        public int Weight { get; set; } = default!;
+    }
+}

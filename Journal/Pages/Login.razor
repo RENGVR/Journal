@@ -1,0 +1,101 @@
+﻿@page "/login"
+
+@layout LoginLayout
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Journal.Data;
+@using System.ComponentModel.DataAnnotations;
+@using Journal.Services;
+
+@inject UserManager UserManager
+@inject NavigationManager NavigationManager
+
+    <div class="container w-50 mt-5">
+        <div class="login-container">
+            <EditForm Model="@Model" OnValidSubmit="@OnSubmit">
+                <DataAnnotationsValidator />
+                <h2 class="mb-4">Login</h2>
+
+                <div class="mb-3">
+                    <label class="mb-1" for="username">Benutzername:</label>
+                    <div>
+                        <InputText id="username" class="form-control" @bind-Value="@Model.Username" />
+                        <ValidationMessage For="@(() => Model.Username)" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="mb-1" for="password">Passwort</label>
+                    <InputText id="password" class="form-control" type="password" @bind-Value="Model.Password" />
+                    <ValidationMessage For="@(() => Model.Password)" />
+                </div>
+
+                <button type="submit" class="btn btn-primary mb-3">Anmelden</button>
+
+                <div class="d-flex justify-content-between align-items-md-center">
+                    <div>Noch nicht registriert?</div>
+                    <button class="btn btn-secondary m-3" @onclick="NavigateToRegistration">Registrieren</button>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="alert alert-danger">@ErrorMessage</div>
+                }
+
+            </EditForm>
+        </div>
+    </div>
+
+@code {
+    private LoginModel Model = new LoginModel();
+
+    private MainLayout MainLayout = new MainLayout();
+
+    private string ErrorMessage = default!;
+
+    public bool IsValid { get; set; }
+
+    public bool IsLoggedIn { get; set; }
+
+    private DisplayComponent CurrentComponent = DisplayComponent.Login;
+
+    private enum DisplayComponent
+    {
+        Login,
+        Registration
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        IsValid = await UserManager.ValidateUserAsync(Model.Username, Model.Password);
+
+        if (IsValid)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            ErrorMessage = "Ungültiger Benutzername oder Passwort.";
+        }
+    }
+
+    private void NavigateToRegistration()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+
+    // Eine Klasse, die das Registrierungsformularmodell darstellt
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Benutzername ist erforderlich.")]
+        public string Username { get; set; } = default!;
+
+        [Required(ErrorMessage = "Passwort ist erforderlich.")]
+        public string Password { get; set; } = default!;
+    }
+}
